@@ -27,7 +27,7 @@ form.addEventListener('submit', async (e) => {
 
   if (!query) {
     iziToast.error({
-      position: 'topRight',
+      position: 'center',
       title: 'Помилка',
       message: 'Ви нічого не ввели!',
     });
@@ -43,13 +43,13 @@ form.addEventListener('submit', async (e) => {
 
   try {
     const { data } = await getImagesByQuery(query, currentPage);
-    const { hits, totalHits } = data;
+    const { hits, total } = data;
 
-    console.log(`totalHits: ${totalHits}`);
+    console.log(`totalHits: ${total}`);
 
     if (hits.length === 0) {
       iziToast.warning({
-        position: 'topRight',
+        position: 'center',
         title: 'Немає результатів',
         message: 'Нічого не знайдено.',
       });
@@ -60,7 +60,7 @@ form.addEventListener('submit', async (e) => {
     createGallery(hits);
 
 
-    if (currentPage * PER_PAGE < totalHits) {
+    if (currentPage * PER_PAGE < total) {
       showLoadMoreButton();
     } else {
       hideLoadMoreButton();
@@ -68,7 +68,7 @@ form.addEventListener('submit', async (e) => {
   } catch (err) {
     console.log(err);
     iziToast.error({
-      position: 'topRight',
+      position: 'center',
       title: err?.message || 'Помилка запиту',
       message: 'Спробуйте ще раз пізніше.',
     });
@@ -89,7 +89,7 @@ moreBtn.addEventListener('click', async () => {
     const { data } = await getImagesByQuery(query, currentPage);
     createGallery(data.hits);
 
-    if (currentPage * PER_PAGE >= data.totalHits) {
+    if (currentPage * PER_PAGE >= data.total) {
       hideLoadMoreButton();
     }
   } catch (err) {
