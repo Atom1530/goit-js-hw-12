@@ -2,8 +2,10 @@ import SimpleLightbox from 'simplelightbox';
 import 'simplelightbox/dist/simple-lightbox.min.css';
 
 let lightbox;
-let loaderEl;
 
+const gallery  = document.getElementById('gallery');
+const loaderEl = document.getElementById('loader');
+const moreBtn  = document.getElementById('moreBtn');
 
 
 export function createGallery(images = []) {
@@ -12,7 +14,7 @@ export function createGallery(images = []) {
   const markup = images
     .map(
       ({ webformatURL, largeImageURL, tags, likes, views, comments, downloads }) => `
-      <div class="photo-card">
+      <li class="photo-card">
         <a class="gallery__item" href="${largeImageURL}">
           <img class="gallery__image" src="${webformatURL}" alt="${tags}" loading="lazy" />
         </a>
@@ -22,7 +24,7 @@ export function createGallery(images = []) {
           <li><b>Comments:</b> ${comments}</li>
           <li><b>Downloads:</b> ${downloads}</li>
         </ul>
-      </div>`
+      </li>`
     )
     .join('');
 
@@ -45,17 +47,8 @@ export function clearGallery() {
 }
 
 
-function ensureLoader() {
-  if (!loaderEl) {
-    loaderEl = document.createElement('div');
-    loaderEl.classList.add('loader', 'is-hidden');
-    loaderEl.innerHTML = `<span class="loader__spinner"></span>`;
-    document.querySelector('form').insertAdjacentElement('afterend', loaderEl);
-  }
-}
-
 export function showLoader() {
-  
+
   loaderEl.classList.remove('is-hidden');
 }
 
