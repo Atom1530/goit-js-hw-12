@@ -55,7 +55,7 @@ function ensureLoader() {
 }
 
 export function showLoader() {
-  ensureLoader();
+  
   loaderEl.classList.remove('is-hidden');
 }
 
