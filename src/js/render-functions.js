@@ -5,16 +5,9 @@ let lightbox;
 let loaderEl;
 
 
+
 export function createGallery(images = []) {
 
-  let gallery = document.querySelector('#gallery');
-
-  if (!gallery) {
-    gallery = document.createElement('div');
-    gallery.id = 'gallery';
-    gallery.classList.add('gallery');
-    document.body.appendChild(gallery); 
-  }
 
   const markup = images
     .map(
@@ -71,3 +64,12 @@ export function hideLoader() {
     loaderEl.classList.add('is-hidden');
   }
 }
+
+export function showLoadMoreButton() {
+    moreBtn.classList.remove('is-hidden');
+}
+
+export function hideLoadMoreButton() {
+    moreBtn.classList.add('is-hidden');
+}
+

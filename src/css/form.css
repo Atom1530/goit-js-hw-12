@@ -139,3 +139,32 @@ body {
     display: block;
     margin-bottom: 4px;
 }
+
+
+#moreBtn {
+    height: 40px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 6px;
+    background: #3b82f6;
+    color: #fff;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+}
+
+#moreBtnDiv {
+ display: flex;
+ align-items: center;
+ justify-content: center;
+}
+
+#moreBtn:hover {
+    background: #2563eb;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+#moreBtn:active {
+    transform: scale(0.96);
+}

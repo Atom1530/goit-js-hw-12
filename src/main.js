@@ -1,63 +1,100 @@
-
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
 import { getImagesByQuery } from './js/pixabay-api.js';
-import { createGallery, clearGallery,showLoader, hideLoader} from './js/render-functions.js';
+import { createGallery, clearGallery, showLoader, hideLoader,hideLoadMoreButton, showLoadMoreButton} from './js/render-functions.js';
 
 const form = document.querySelector('form');
+const galleryHolder = form.textContent;
 const submitBtn = form.querySelector('button[type="submit"]');
+const moreBtn = document.querySelector('#moreBtn');
 
  
-form.addEventListener('submit', (e) => {
-    e.preventDefault();
+let message = '';
+let currentPage = 1;
 
+ 
 
-        const formData = new FormData(e.target);
-        const message = formData.get('searchText').trim();
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+   message = new FormData(e.target).get('searchText').trim();
+
+  if (!message) {
+    iziToast.error({
+      position: 'topRight',
+      title: 'Помилка',
+      message: 'Ви нічого не ввели!',
+    });
+    return;
+  }
+
+  const oldText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Searching…';
+
+  clearGallery();
+    showLoader();
+
     
-        if (!message) {
-            iziToast.error({
-                position: 'topRight',
-                title: 'Ерор',
-                message: 'Ви нічого не ввели!'
-            });
-            return;
-    }
-        clearGallery();
-        showLoader();
 
-        submitBtn.disabled = true;
+  try {
+    const result = await getImagesByQuery(message, currentPage);
 
-        
-        getImagesByQuery(message).then(result => {
-   
-            const images = result.data.hits;
-        
-            if (!images.length) {
-                iziToast.error({
-                    position: 'topRight',
-                    title: 'Немає результатів',
-                    message: 'Нічого не знайдено'
-                });
-                submitBtn.disabled = false;
-               submitBtn.textContent = oldText;
-                return;
-            }
+    const images = result.data.hits;
+    const totalImg = result.data.total;
+     console.log(`total Img in data: ${totalImg}`);
+     
 
-            createGallery(images)
-                ;
-        }).catch((err) => {console.log(err);
-        
-            iziToast.error({
-                position: 'topRight',
-                title: err,
-                message: 'Помилка'
-            })
-
-        }).then(() => {
-           hideLoader();
-           submitBtn.disabled = false;
-            e.target.reset();
+       if (images.length === 0) {
+        iziToast.warning({
+          position: 'topRight',
+          title: 'Немає результатів',
+          message: 'Нічого не знайдено.',
         });
+        hideLoadMoreButton()
+        return; 
+      }
 
-})
+      createGallery(images);
+      page++;
+      if (totalImg > ImgPerPage) {
+          showLoadMoreButton();
+        } else {
+          hideLoadMoreButton();
+        }
+
+    
+  } catch (err) {
+    console.log(err);
+    iziToast.error({
+      position: 'topRight',
+      title: err?.message || 'Помилка запиту',
+      message: 'Спробуйте ще раз пізніше.',
+    });
+  } finally {
+    hideLoader();
+    submitBtn.disabled = false;
+    submitBtn.textContent = oldText; 
+    e.target.reset();
+    }
+    
+});
+
+moreBtn.addEventListener('click', async () => {
+  showLoader();
+  try {
+    const result = await getImagesByQuery(message, page);
+      createGallery(result.data.hits);
+ 
+      page=+20;
+      
+    if (page * ImgPerPage >= result.totalHits) {
+      hideLoadMoreButton();
+    }
+  } finally {
+    hideLoader();
+    
+  }
+});
+
+
