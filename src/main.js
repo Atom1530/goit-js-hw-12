@@ -1,25 +1,31 @@
 import iziToast from 'izitoast';
 import 'izitoast/dist/css/iziToast.min.css';
-import { getImagesByQuery } from './js/pixabay-api.js';
-import { createGallery, clearGallery, showLoader, hideLoader,hideLoadMoreButton, showLoadMoreButton} from './js/render-functions.js';
+import { getImagesByQuery, PER_PAGE } from './js/pixabay-api.js';
+import {
+  createGallery,
+  clearGallery,
+  showLoader,
+  hideLoader,
+  hideLoadMoreButton,
+  showLoadMoreButton,
+} from './js/render-functions.js';
 
 const form = document.querySelector('form');
-const galleryHolder = form.textContent;
 const submitBtn = form.querySelector('button[type="submit"]');
 const moreBtn = document.querySelector('#moreBtn');
 
- 
-let message = '';
+let query = '';
 let currentPage = 1;
 
- 
 
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
 
-   message = new FormData(e.target).get('searchText').trim();
+  query = new FormData(e.target).get('searchText').trim();
+  currentPage = 1;                
+  hideLoadMoreButton();          
 
-  if (!message) {
+  if (!query) {
     iziToast.error({
       position: 'topRight',
       title: 'Помилка',
@@ -33,37 +39,32 @@ form.addEventListener('submit', async (e) => {
   submitBtn.textContent = 'Searching…';
 
   clearGallery();
-    showLoader();
-
-    
+  showLoader();
 
   try {
-    const result = await getImagesByQuery(message, currentPage);
+    const { data } = await getImagesByQuery(query, currentPage);
+    const { hits, totalHits } = data;
 
-    const images = result.data.hits;
-    const totalImg = result.data.total;
-     console.log(`total Img in data: ${totalImg}`);
-     
+    console.log(`totalHits: ${totalHits}`);
 
-       if (images.length === 0) {
-        iziToast.warning({
-          position: 'topRight',
-          title: 'Немає результатів',
-          message: 'Нічого не знайдено.',
-        });
-        hideLoadMoreButton()
-        return; 
-      }
+    if (hits.length === 0) {
+      iziToast.warning({
+        position: 'topRight',
+        title: 'Немає результатів',
+        message: 'Нічого не знайдено.',
+      });
+      hideLoadMoreButton();
+      return;
+    }
 
-      createGallery(images);
-      page++;
-      if (totalImg > ImgPerPage) {
-          showLoadMoreButton();
-        } else {
-          hideLoadMoreButton();
-        }
+    createGallery(hits);
 
-    
+
+    if (currentPage * PER_PAGE < totalHits) {
+      showLoadMoreButton();
+    } else {
+      hideLoadMoreButton();
+    }
   } catch (err) {
     console.log(err);
     iziToast.error({
@@ -74,27 +75,27 @@ form.addEventListener('submit', async (e) => {
   } finally {
     hideLoader();
     submitBtn.disabled = false;
-    submitBtn.textContent = oldText; 
+    submitBtn.textContent = oldText;
     e.target.reset();
-    }
-    
-});
-
-moreBtn.addEventListener('click', async () => {
-  showLoader();
-  try {
-    const result = await getImagesByQuery(message, page);
-      createGallery(result.data.hits);
- 
-      page=+20;
-      
-    if (page * ImgPerPage >= result.totalHits) {
-      hideLoadMoreButton();
-    }
-  } finally {
-    hideLoader();
-    
   }
 });
 
+moreBtn.addEventListener('click', async () => {
+  moreBtn.disabled = true;
+  currentPage += 1;
 
+  showLoader();
+  try {
+    const { data } = await getImagesByQuery(query, currentPage);
+    createGallery(data.hits);
+
+    if (currentPage * PER_PAGE >= data.totalHits) {
+      hideLoadMoreButton();
+    }
+  } catch (err) {
+    console.log(err);
+  } finally {
+    hideLoader();
+    moreBtn.disabled = false;
+  }
+});
