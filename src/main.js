@@ -42,7 +42,7 @@ form.addEventListener('submit', async (e) => {
   showLoader();
 
   try {
-    const { data } = await getImagesByQuery(query, currentPage);
+    const  data  = await getImagesByQuery(query, currentPage);
     const { hits, total } = data;
 
     console.log(`totalHits: ${total}`);
@@ -64,6 +64,11 @@ form.addEventListener('submit', async (e) => {
       showLoadMoreButton();
     } else {
       hideLoadMoreButton();
+      iziToast.info({
+    position: 'bottomCenter',
+    title: 'Кінець',
+    message: "Більше немає результатів.",
+  });
     }
   } catch (err) {
     console.log(err);
@@ -86,11 +91,27 @@ moreBtn.addEventListener('click', async () => {
 
   showLoader();
   try {
-    const { data } = await getImagesByQuery(query, currentPage);
+    const data  = await getImagesByQuery(query, currentPage);
     createGallery(data.hits);
+ 
+
+    const { height: cardHeight } = document
+    .querySelector('.gallery')
+     .firstElementChild.getBoundingClientRect();
+
+    window.scrollBy({
+     top: cardHeight * 2,
+     behavior: 'smooth',
+     });
+
 
     if (currentPage * PER_PAGE >= data.total) {
       hideLoadMoreButton();
+      iziToast.info({
+    position: 'bottomCenter',
+    title: 'Кінець',
+    message: "Це всі результати за запитом.",
+  });
     }
   } catch (err) {
     console.log(err);
